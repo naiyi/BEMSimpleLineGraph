@@ -2,6 +2,8 @@
 
 *不需要修改podspec中的source，因为只有从Cocoapods的spec中搜索到的库才需要从podspec中读取source来获取源文件。在Podfile中直接指定:git =>的私有库，source路径一定指向该位置，所以podspec中指定的source在这里不起作用，不过其他的像source_files等配置和编译属性还是起作用的。
 
+*私有库除了:git =>以外，如果是从Cocoapods上fork下来并做了修改的内容，还需要指定:commit => 到最新的提交id，因为如果不指定的话，pod update的时候每次都会去git clone一次完整的源码，指定了提交id就会使用缓存而不会再去尝试下载。
+
 # BEMSimpleLineGraph    
 [![Build Status](https://travis-ci.org/Boris-Em/BEMSimpleLineGraph.svg?branch=master)](https://travis-ci.org/Boris-Em/BEMSimpleLineGraph)
 [![Version](https://img.shields.io/cocoapods/v/BEMSimpleLineGraph.svg?style=flat)](http://cocoadocs.org/docsets/BEMSimpleLineGraph)
