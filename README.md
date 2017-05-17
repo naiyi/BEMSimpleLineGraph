@@ -1,3 +1,6 @@
+*增加并优化某些功能
+*不需要修改podspec中的source，因为只有从Cocoapods的spec中搜索到的库才需要从podspec中读取source来获取源文件。在Podfile中直接指定:git =>的私有库，source路径一定指向该位置，所以podspec中指定的source在这里不起作用，不过其他的像source_files等配置和编译属性还是起作用的。
+
 # BEMSimpleLineGraph    
 [![Build Status](https://travis-ci.org/Boris-Em/BEMSimpleLineGraph.svg?branch=master)](https://travis-ci.org/Boris-Em/BEMSimpleLineGraph)
 [![Version](https://img.shields.io/cocoapods/v/BEMSimpleLineGraph.svg?style=flat)](http://cocoadocs.org/docsets/BEMSimpleLineGraph)
