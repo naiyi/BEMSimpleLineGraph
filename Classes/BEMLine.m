@@ -44,6 +44,7 @@
     UIBezierPath *verticalReferenceLinesPath = [UIBezierPath bezierPath];
     UIBezierPath *horizontalReferenceLinesPath = [UIBezierPath bezierPath];
     UIBezierPath *referenceFramePath = [UIBezierPath bezierPath];
+    UIBezierPath *referenceAreaPath = [UIBezierPath bezierPath];
 
     verticalReferenceLinesPath.lineCapStyle = kCGLineCapButt;
     verticalReferenceLinesPath.lineWidth = 0.7;
@@ -53,6 +54,25 @@
 
     referenceFramePath.lineCapStyle = kCGLineCapButt;
     referenceFramePath.lineWidth = 0.7;
+    
+    referenceAreaPath.lineCapStyle = kCGLineCapButt;
+    referenceAreaPath.lineWidth = 0.7;
+    
+    if (self.referenceMaxYValue > 0 && self.referenceMinYValue > 0) {
+        [referenceAreaPath moveToPoint:CGPointMake(0, (240-self.referenceMinYValue)/240 * self.frame.size.height )];
+        [referenceAreaPath addLineToPoint:CGPointMake(self.frame.size.width, (240-self.referenceMinYValue)/240 * self.frame.size.height )];
+        [referenceAreaPath addLineToPoint:CGPointMake(self.frame.size.width, (240-self.referenceMaxYValue)/240 * self.frame.size.height )];
+        [referenceAreaPath addLineToPoint:CGPointMake(0, (240-self.referenceMaxYValue)/240 * self.frame.size.height )];
+        
+        CAShapeLayer *referenceAreaPathLayer = [CAShapeLayer layer];
+        referenceAreaPathLayer.frame = self.bounds;
+        referenceAreaPathLayer.path = referenceAreaPath.CGPath;
+        referenceAreaPathLayer.opacity = self.lineAlpha == 0 ? 0.1 : self.lineAlpha/2;
+        referenceAreaPathLayer.fillColor = [UIColor greenColor].CGColor;
+        referenceAreaPathLayer.lineWidth = self.referenceLineWidth/2;
+        
+        [self.layer addSublayer:referenceAreaPathLayer];
+    }
 
     if (self.enableRefrenceFrame == YES) {
         if (self.enableBottomReferenceFrameLine) {
