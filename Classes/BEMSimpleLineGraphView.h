@@ -107,16 +107,6 @@ IB_DESIGNABLE @interface BEMSimpleLineGraphView : UIView <UIGestureRecognizerDel
 - (NSNumber *)calculateLineGraphStandardDeviation;
 
 
-/** Calculates the minimum value of all points on the line graph.
- @return The minimum number of the points on the graph. Originally a float. */
-- (NSNumber *)calculateMinimumPointValue;
-
-
-/** Calculates the maximum value of all points on the line graph.
- @return The maximum value of the points on the graph. Originally a float. */
-- (NSNumber *)calculateMaximumPointValue;
-
-
 /** All the displayed values of the X-Axis.
  @return An array of NSStrings, one for each displayed X-Axis label. The array is sorted from the left side of the graph to the right side. */
 - (nullable NSArray *)graphValuesForXAxis;
@@ -357,6 +347,9 @@ IB_DESIGNABLE @interface BEMSimpleLineGraphView : UIView <UIGestureRecognizerDel
 /// When set to YES, dots will be displayed at full opacity and no line will be drawn through the dots. Default value is NO.
 @property (nonatomic) BOOL displayDotsOnly;
 
+@property (nonatomic) CGFloat referenceMaxYValue;
+@property (nonatomic) CGFloat referenceMinYValue;
+
 
 @end
 
@@ -455,7 +448,7 @@ IB_DESIGNABLE @interface BEMSimpleLineGraphView : UIView <UIGestureRecognizerDel
 /** The optional prefix to append to the popup report.
  @param graph The graph object requesting the total number of points.
  @return The prefix to prepend to the popup report. */
-- (NSString *)popUpPrefixForlineGraph:(BEMSimpleLineGraphView *)graph;
+- (NSString *)popUpPrefixForlineGraph:(BEMSimpleLineGraphView *)graph index:(int)index;
 
 
 /** Optional method to always display some of the pop up labels on the graph.
