@@ -24,11 +24,11 @@ const CGFloat BEMNullGraphValue = CGFLOAT_MAX;
 typedef NS_ENUM(NSInteger, BEMInternalTags)
 {
     DotFirstTag100 = 100,
-    DotLastTag1000 = 1000,
-    LabelYAxisTag2000 = 2000,
-    BackgroundYAxisTag2100 = 2100,
-    BackgroundXAxisTag2200 = 2200,
-    PermanentPopUpViewTag3100 = 3100,
+    DotLastTag1000 = 3000,
+    LabelYAxisTag2000 = 5000,
+    BackgroundYAxisTag2100 = 5100,
+    BackgroundXAxisTag2200 = 5200,
+    PermanentPopUpViewTag3100 = 6100,
 };
 
 @interface BEMSimpleLineGraphView () {
@@ -302,7 +302,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         return;
         
     } else if (numberOfPoints == 1) {
-        NSLog(@"[BEMSimpleLineGraph] Data source contains only one data point. Add more data to the data source and then reload the graph.");
+//        NSLog(@"[BEMSimpleLineGraph] Data source contains only one data point. Add more data to the data source and then reload the graph.");
         BEMCircle *circleDot = [[BEMCircle alloc] initWithFrame:CGRectMake(0, 0, self.sizePoint, self.sizePoint)];
         circleDot.center = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
         circleDot.Pointcolor = self.colorPoint;
@@ -348,8 +348,8 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 self.popUpView.alpha = 0;
                 [self addSubview:self.popUpView];
             } else {
-                NSString *maxValueString = [NSString stringWithFormat:self.formatStringForValues, [self calculateMaximumPointValue].doubleValue];
-                NSString *minValueString = [NSString stringWithFormat:self.formatStringForValues, [self calculateMinimumPointValue].doubleValue];
+                NSString *maxValueString = [NSString stringWithFormat:self.formatStringForValues, [self getMaximumValue]];
+                NSString *minValueString = [NSString stringWithFormat:self.formatStringForValues, [self getMinimumValue]];
                 
                 NSString *longestString = @"";
                 if (maxValueString.length > minValueString.length) {
@@ -363,8 +363,8 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)]) {
                     suffix = [self.delegate popUpSuffixForlineGraph:self];
                 }
-                if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:)]) {
-                    prefix = [self.delegate popUpPrefixForlineGraph:self];
+                if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:index:)]) {
+                    prefix = [self.delegate popUpPrefixForlineGraph:self index:0];
                 }
                 
                 NSString *fullString = [NSString stringWithFormat:@"%@%@%@", prefix, longestString, suffix];
@@ -571,6 +571,9 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     
     BEMLine *line = [[BEMLine alloc] initWithFrame:[self drawableGraphArea]];
     
+    line.referenceMaxYValue = self.referenceMaxYValue;
+    line.referenceMinYValue = self.referenceMinYValue;
+    
     line.opaque = NO;
     line.alpha = 1;
     line.backgroundColor = [UIColor clearColor];
@@ -758,6 +761,7 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
                 
                 for (int i = 1; i <= (numberOfPoints/numberOfGaps); i++) {
                     NSInteger index = i *numberOfGaps - 1 - offset;
+//                    NSInteger index = i * numberOfGaps;
                     NSString *xAxisLabelText = [self xAxisTextForIndex:index];
                     
                     UILabel *labelXAxis = [self xAxisLabelWithText:xAxisLabelText atIndex:index];
@@ -870,9 +874,9 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     
     // Set the final center point of the x-axis labels
     if (self.positionYAxisRight) {
-        center = CGPointMake(positionOnXAxis, self.frame.size.height - lRect.size.height/2);
+        center = CGPointMake(positionOnXAxis, self.frame.size.height - lRect.size.height/2-2);  // 不减一点的话 794行那里的CGRectContainsRect计算会有错误
     } else {
-        center = CGPointMake(positionOnXAxis, self.frame.size.height - lRect.size.height/2);
+        center = CGPointMake(positionOnXAxis, self.frame.size.height - lRect.size.height/2-2);
     }
     
     CGRect rect = labelXAxis.frame;
@@ -900,18 +904,20 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         frameForBackgroundYAxis = CGRectMake(self.frame.size.width - self.YAxisLabelXOffset, 0, self.YAxisLabelXOffset, self.frame.size.height);
         frameForLabelYAxis = CGRectMake(self.frame.size.width - self.YAxisLabelXOffset - 5, 0, self.YAxisLabelXOffset - 5, 15);
         xValueForCenterLabelYAxis = self.frame.size.width - self.YAxisLabelXOffset /2;
-        textAlignmentForLabelYAxis = NSTextAlignmentRight;
+        textAlignmentForLabelYAxis = NSTextAlignmentCenter;
     } else {
         frameForBackgroundYAxis = CGRectMake(0, 0, self.YAxisLabelXOffset, self.frame.size.height);
         frameForLabelYAxis = CGRectMake(0, 0, self.YAxisLabelXOffset - 5, 15);
         xValueForCenterLabelYAxis = self.YAxisLabelXOffset/2;
-        textAlignmentForLabelYAxis = NSTextAlignmentRight;
+        textAlignmentForLabelYAxis = NSTextAlignmentCenter;
     }
     
     UIView *backgroundYaxis = [[UIView alloc] initWithFrame:frameForBackgroundYAxis];
     backgroundYaxis.tag = BackgroundYAxisTag2100;
-    if (self.colorBackgroundYaxis == nil) backgroundYaxis.backgroundColor = self.colorTop;
-    else backgroundYaxis.backgroundColor = self.colorBackgroundYaxis;
+    if (self.colorBackgroundYaxis == nil)
+        backgroundYaxis.backgroundColor = self.colorTop;
+    else
+        backgroundYaxis.backgroundColor = self.colorBackgroundYaxis;
     backgroundYaxis.alpha = self.alphaBackgroundYaxis;
     [self addSubview:backgroundYaxis];
     
@@ -921,16 +927,18 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     NSString *yAxisSuffix = @"";
     NSString *yAxisPrefix = @"";
     
-    if ([self.delegate respondsToSelector:@selector(yAxisPrefixOnLineGraph:)]) yAxisPrefix = [self.delegate yAxisPrefixOnLineGraph:self];
-    if ([self.delegate respondsToSelector:@selector(yAxisSuffixOnLineGraph:)]) yAxisSuffix = [self.delegate yAxisSuffixOnLineGraph:self];
+    if ([self.delegate respondsToSelector:@selector(yAxisPrefixOnLineGraph:)])
+        yAxisPrefix = [self.delegate yAxisPrefixOnLineGraph:self];
+    if ([self.delegate respondsToSelector:@selector(yAxisSuffixOnLineGraph:)])
+        yAxisSuffix = [self.delegate yAxisSuffixOnLineGraph:self];
     
     if (self.autoScaleYAxis) {
         // Plot according to min-max range
         NSNumber *minimumValue;
         NSNumber *maximumValue;
 
-        minimumValue = [self calculateMinimumPointValue];
-        maximumValue = [self calculateMaximumPointValue];
+        minimumValue = @([self getMinimumValue]);
+        maximumValue = @([self getMaximumValue]);
         
         CGFloat numberOfLabels;
         if ([self.delegate respondsToSelector:@selector(numberOfYAxisLabelsOnLineGraph:)]) {
@@ -1092,8 +1100,8 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)])
         suffix = [self.delegate popUpSuffixForlineGraph:self];
 
-    if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:)])
-        prefix = [self.delegate popUpPrefixForlineGraph:self];
+    if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:index:)])
+        prefix = [self.delegate popUpPrefixForlineGraph:self index:0];
 
     int index = (int)(circleDot.tag - DotFirstTag100);
     NSNumber *value = dataPoints[index]; // @((NSInteger) circleDot.absoluteValue)
@@ -1248,25 +1256,6 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
     return value;
 }
 
-- (NSNumber *)calculateMinimumPointValue {
-    NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
-    
-    NSExpression *expression = [NSExpression expressionForFunction:@"min:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
-    NSNumber *value = [expression expressionValueWithObject:nil context:nil];
-    return value;
-}
-
-- (NSNumber *)calculateMaximumPointValue {
-    NSArray *filteredArray = [self calculationDataPoints];
-    if (filteredArray.count == 0) return [NSNumber numberWithInt:0];
-    
-    NSExpression *expression = [NSExpression expressionForFunction:@"max:" arguments:@[[NSExpression expressionForConstantValue:filteredArray]]];
-    NSNumber *value = [expression expressionValueWithObject:nil context:nil];
-    
-    return value;
-}
-
 
 #pragma mark - Values
 
@@ -1312,8 +1301,12 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
 - (void)handleGestureAction:(UIGestureRecognizer *)recognizer {
     CGPoint translation = [recognizer locationInView:self.viewForBaselineLayout];
     
-    if (!((translation.x + self.frame.origin.x) <= self.frame.origin.x) && !((translation.x + self.frame.origin.x) >= self.frame.origin.x + self.frame.size.width)) { // To make sure the vertical line doesn't go beyond the frame of the graph.
-        self.touchInputLine.frame = CGRectMake(translation.x - self.widthTouchInputLine/2, 0, self.widthTouchInputLine, self.frame.size.height);
+    if ( translation.x > self.YAxisLabelXOffset && translation.x < self.frame.size.width ) { // To make sure the vertical line doesn't go beyond the frame of the graph.
+        self.touchInputLine.frame = CGRectMake(translation.x - self.widthTouchInputLine/2, 0, self.widthTouchInputLine, self.frame.size.height-self.XAxisLabelYOffset-5);
+    }else if(translation.x <= self.YAxisLabelXOffset){
+        self.touchInputLine.frame = CGRectMake(self.YAxisLabelXOffset, 0, self.widthTouchInputLine, self.frame.size.height-self.XAxisLabelYOffset-5);
+    }else if(translation.x >= self.frame.size.width){
+        self.touchInputLine.frame = CGRectMake(self.frame.size.width-self.widthTouchInputLine, 0, self.widthTouchInputLine, self.frame.size.height-self.XAxisLabelYOffset-5);
     }
     
     self.touchInputLine.alpha = self.alphaTouchInputLine;
@@ -1429,8 +1422,8 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         if ([self.delegate respondsToSelector:@selector(popUpSuffixForlineGraph:)]) {
             suffix = [self.delegate popUpSuffixForlineGraph:self];
         }
-        if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:)]) {
-            prefix = [self.delegate popUpPrefixForlineGraph:self];
+        if ([self.delegate respondsToSelector:@selector(popUpPrefixForlineGraph:index:)]) {
+            prefix = [self.delegate popUpPrefixForlineGraph:self index:index];
         }
         NSNumber *value = dataPoints[index];
         NSString *formattedValue = [NSString stringWithFormat:self.formatStringForValues, value.doubleValue];
@@ -1560,9 +1553,12 @@ typedef NS_ENUM(NSInteger, BEMInternalTags)
         }
     }
     
-    if (self.minValue == self.maxValue && self.autoScaleYAxis == YES) positionOnYAxis = self.frame.size.height/2;
-    else if (self.autoScaleYAxis == YES) positionOnYAxis = ((self.frame.size.height - padding/2) - ((dotValue - self.minValue) / ((self.maxValue - self.minValue) / (self.frame.size.height - padding)))) + self.XAxisLabelYOffset/2;
-    else positionOnYAxis = ((self.frame.size.height) - dotValue);
+    if (self.minValue == self.maxValue && self.autoScaleYAxis == YES)
+        positionOnYAxis = self.frame.size.height/2;
+    else if (self.autoScaleYAxis == YES)
+        positionOnYAxis = ((self.frame.size.height - padding/2) - ((dotValue - self.minValue) / ((self.maxValue - self.minValue) / (self.frame.size.height - padding)))) + self.XAxisLabelYOffset/2;
+    else
+        positionOnYAxis = ((self.frame.size.height) - dotValue);
     
     positionOnYAxis -= self.XAxisLabelYOffset;
     
