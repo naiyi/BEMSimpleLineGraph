@@ -20,7 +20,7 @@
   },
   "requires_arc": true,
   "source": {
-    "git": "https://github.com/test/BEMSimpleLineGraph.git",
+    "git": "https://github.com/Boris-Em/BEMSimpleLineGraph.git",
     "tag": "v4.1.1"
   },
   "source_files": [
