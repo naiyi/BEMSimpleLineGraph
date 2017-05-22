@@ -6,8 +6,7 @@
 //  Copyright (c) 2015 Boris Emorine. All rights reserved.
 //
 
-@import Foundation;
-@import UIKit;
+#import <UIKit/UIKit.h>
 
 
 /// A line displayed horizontally across the graph at the average y-value
