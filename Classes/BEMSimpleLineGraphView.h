@@ -7,9 +7,8 @@
 //  Copyright (c) 2014 Sam Spencer.
 //
 
-@import Foundation;
-@import UIKit;
-@import CoreGraphics;
+#import <UIKit/UIKit.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 #import "BEMCircle.h"
 #import "BEMLine.h"
